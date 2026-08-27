@@ -4,253 +4,1166 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<title>Realistic Flight Simulator</title>
+<title>Flight Simulator</title>
 
 <style>
-* {
-    box-sizing: border-box;
-}
-
 html,
 body {
     margin: 0;
+    padding: 0;
     width: 100%;
     height: 100%;
     overflow: hidden;
     background: #000;
-    font-family: Arial, sans-serif;
+    font-family: Arial, Helvetica, sans-serif;
 }
 
-#simulator {
-    position: relative;
-    width: 100vw;
-    height: 100vh;
-    overflow: hidden;
-}
-
-#world {
-    position: absolute;
+#game {
+    position: fixed;
     inset: 0;
-    width: 100%;
-    height: 100%;
 }
 
-/* ---------------- HUD ---------------- */
+canvas {
+    display: block;
+}
 
-#hud {
-    position: absolute;
-    inset: 0;
-    pointer-events: none;
-    color: #00ff66;
+/* =========================
+   TOP BAR
+========================= */
+
+#topBar {
+    position: fixed;
+    top: 15px;
+    left: 50%;
+    transform: translateX(-50%);
+
+    padding: 10px 22px;
+
+    background: rgba(0,0,0,0.55);
+    border: 1px solid rgba(255,255,255,0.25);
+    border-radius: 8px;
+
+    color: white;
     font-family: monospace;
-    text-shadow: 0 0 5px black;
+    font-size: 16px;
+
+    backdrop-filter: blur(8px);
+
+    z-index: 10;
 }
 
-.panel {
-    position: absolute;
-    padding: 10px 14px;
-    background: rgba(0,0,0,.55);
-    border: 1px solid rgba(0,255,100,.7);
-    border-radius: 5px;
+#topBar span {
+    margin: 0 15px;
 }
 
-.label {
+/* =========================
+   LEFT INSTRUMENT
+========================= */
+
+.instrument {
+    position: fixed;
+
+    width: 170px;
+
+    padding: 12px;
+
+    background: rgba(0,0,0,0.55);
+
+    border:
+        1px solid
+        rgba(255,255,255,0.25);
+
+    border-radius: 8px;
+
+    color: white;
+
+    font-family: monospace;
+
+    backdrop-filter: blur(8px);
+
+    z-index: 10;
+}
+
+#leftInstrument {
+    left: 20px;
+    top: 20px;
+}
+
+#rightInstrument {
+    right: 20px;
+    top: 20px;
+}
+
+.instrumentTitle {
     font-size: 11px;
-    opacity: .8;
+    color: #aaa;
+    margin-bottom: 3px;
 }
 
-.value {
-    font-size: 25px;
+.instrumentValue {
+    font-size: 28px;
+    font-weight: bold;
+    margin-bottom: 10px;
+}
+
+/* =========================
+   BOTTOM CONTROL PANEL
+========================= */
+
+#controls {
+    position: fixed;
+
+    left: 20px;
+    bottom: 20px;
+
+    width: 280px;
+
+    padding: 15px;
+
+    background: rgba(0,0,0,0.65);
+
+    border:
+        1px solid
+        rgba(255,255,255,0.3);
+
+    border-radius: 10px;
+
+    color: white;
+
+    font-family: monospace;
+
+    backdrop-filter: blur(8px);
+
+    z-index: 10;
+}
+
+#controlsTitle {
+    font-size: 13px;
+    font-weight: bold;
+
+    margin-bottom: 10px;
+
+    color: #7ddcff;
+}
+
+.controlRow {
+    display: flex;
+    justify-content: space-between;
+
+    padding: 4px 0;
+
+    border-bottom:
+        1px solid
+        rgba(255,255,255,0.08);
+}
+
+.key {
+    display: inline-block;
+
+    min-width: 38px;
+
+    padding: 3px 6px;
+
+    text-align: center;
+
+    background: #222;
+
+    border: 1px solid #555;
+
+    border-radius: 4px;
+
+    color: white;
+
     font-weight: bold;
 }
 
-#speed {
-    left: 20px;
-    top: 20px;
-}
+/* =========================
+   CENTER FLIGHT MARKER
+========================= */
 
-#altitude {
-    right: 20px;
-    top: 20px;
-}
+#flightMarker {
+    position: fixed;
 
-#heading {
-    top: 20px;
-    left: 50%;
-    transform: translateX(-50%);
-}
-
-#engine {
-    left: 20px;
-    bottom: 20px;
-}
-
-#flight {
-    right: 20px;
-    bottom: 20px;
-}
-
-/* ---------------- AIRCRAFT ---------------- */
-
-#aircraft {
-    position: absolute;
     left: 50%;
     top: 50%;
-    width: 140px;
-    height: 6px;
-    transform: translate(-50%, -50%);
+
+    width: 100px;
+    height: 30px;
+
+    transform:
+        translate(-50%, -50%);
+
+    pointer-events: none;
+
+    z-index: 9;
 }
 
-#aircraft::before {
+#flightMarker::before {
     content: "";
+
     position: absolute;
-    width: 140px;
-    height: 4px;
-    top: 1px;
-    background: white;
-}
 
-#aircraft::after {
-    content: "";
-    position: absolute;
-    width: 4px;
-    height: 32px;
-    left: 68px;
-    top: -13px;
-    background: white;
-}
+    left: 0;
+    right: 0;
 
-/* ---------------- CROSSHAIR ---------------- */
+    top: 14px;
 
-#crosshair {
-    position: absolute;
-    left: 50%;
-    top: 50%;
-    width: 90px;
-    height: 90px;
-    transform: translate(-50%, -50%);
-}
-
-#crosshair::before,
-#crosshair::after {
-    content: "";
-    position: absolute;
-    background: #00ff66;
-}
-
-#crosshair::before {
-    width: 90px;
     height: 2px;
-    top: 44px;
+
+    background: rgba(255,255,255,0.8);
 }
 
-#crosshair::after {
-    width: 2px;
-    height: 90px;
-    left: 44px;
-}
+#flightMarker::after {
+    content: "";
 
-/* ---------------- HELP ---------------- */
-
-#help {
     position: absolute;
+
+    left: 49px;
+
+    top: 0;
+
+    width: 2px;
+    height: 30px;
+
+    background: rgba(255,255,255,0.8);
+}
+
+/* =========================
+   STATUS
+========================= */
+
+#status {
+    position: fixed;
+
+    right: 20px;
     bottom: 20px;
-    left: 50%;
-    transform: translateX(-50%);
-    padding: 8px 15px;
-    background: rgba(0,0,0,.6);
+
+    padding: 10px 15px;
+
+    background: rgba(0,0,0,0.65);
+
+    border-radius: 7px;
+
+    color: #7dff9b;
+
+    font-family: monospace;
+
+    z-index: 10;
+}
+
+/* =========================
+   START SCREEN
+========================= */
+
+#startScreen {
+    position: fixed;
+
+    inset: 0;
+
+    display: flex;
+
+    justify-content: center;
+    align-items: center;
+
+    background:
+        radial-gradient(
+            circle at center,
+            rgba(30,80,130,0.45),
+            rgba(0,0,0,0.85)
+        );
+
+    z-index: 20;
+
     color: white;
-    border-radius: 5px;
-    font-size: 13px;
+
+    text-align: center;
+}
+
+#startBox {
+    width: 420px;
+
+    padding: 35px;
+
+    background: rgba(0,0,0,0.65);
+
+    border:
+        1px solid
+        rgba(255,255,255,0.25);
+
+    border-radius: 15px;
+
+    backdrop-filter: blur(12px);
+}
+
+#startBox h1 {
+    margin-top: 0;
+
+    font-size: 34px;
+}
+
+#startButton {
+    margin-top: 20px;
+
+    padding: 13px 30px;
+
+    border: none;
+
+    border-radius: 7px;
+
+    background: #1677ff;
+
+    color: white;
+
+    font-size: 17px;
+
+    cursor: pointer;
+}
+
+#startButton:hover {
+    background: #3390ff;
 }
 </style>
 </head>
 
 <body>
 
-<div id="simulator">
+<div id="game"></div>
 
-<canvas id="world"></canvas>
+<!-- =========================
+     TOP INSTRUMENT BAR
+========================= -->
 
-<div id="hud">
+<div id="topBar">
 
-    <div id="speed" class="panel">
-        <div class="label">AIRSPEED</div>
-        <div class="value">
-            <span id="speedValue">120</span> KTS
-        </div>
-    </div>
+    <span>
+        HDG:
+        <strong id="heading">000</strong>°
+    </span>
 
-    <div id="altitude" class="panel">
-        <div class="label">ALTITUDE</div>
-        <div class="value">
-            <span id="altitudeValue">5000</span> FT
-        </div>
-    </div>
+    <span>
+        ALT:
+        <strong id="altitude">5000</strong> FT
+    </span>
 
-    <div id="heading" class="panel">
-        HDG <span id="headingValue">000</span>°
-    </div>
-
-    <div id="engine" class="panel">
-        <div class="label">THROTTLE</div>
-        <div class="value">
-            <span id="throttleValue">55</span>%
-        </div>
-    </div>
-
-    <div id="flight" class="panel">
-        <div class="label">FLIGHT CONTROL</div>
-        PITCH: <span id="pitchValue">0</span>°<br>
-        ROLL: <span id="rollValue">0</span>°<br>
-        YAW: <span id="yawValue">0</span>°
-    </div>
-
-    <div id="crosshair"></div>
-    <div id="aircraft"></div>
+    <span>
+        VS:
+        <strong id="verticalSpeed">0</strong> FPM
+    </span>
 
 </div>
 
-<div id="help">
-W/S Pitch · A/D Roll · Q/E Yaw · ↑/↓ Throttle
-</div>
+<!-- =========================
+     LEFT INSTRUMENT
+========================= -->
+
+<div id="leftInstrument"
+     class="instrument">
+
+    <div class="instrumentTitle">
+        AIRSPEED
+    </div>
+
+    <div class="instrumentValue">
+        <span id="airspeed">
+            120
+        </span>
+        KT
+    </div>
+
+    <div class="instrumentTitle">
+        THROTTLE
+    </div>
+
+    <div class="instrumentValue">
+        <span id="throttle">
+            55
+        </span>%
+    </div>
 
 </div>
 
-<script>
+<!-- =========================
+     RIGHT INSTRUMENT
+========================= -->
 
-const canvas =
-    document.getElementById("world");
+<div id="rightInstrument"
+     class="instrument">
 
-const ctx =
-    canvas.getContext("2d");
+    <div class="instrumentTitle">
+        PITCH
+    </div>
 
-function resize() {
+    <div class="instrumentValue">
+        <span id="pitch">
+            0
+        </span>°
+    </div>
 
-    canvas.width =
-        window.innerWidth;
+    <div class="instrumentTitle">
+        BANK
+    </div>
 
-    canvas.height =
-        window.innerHeight;
+    <div class="instrumentValue">
+        <span id="bank">
+            0
+        </span>°
+    </div>
+
+</div>
+
+<!-- =========================
+     CENTER MARKER
+========================= -->
+
+<div id="flightMarker"></div>
+
+<!-- =========================
+     CONTROLS
+========================= -->
+
+<div id="controls">
+
+    <div id="controlsTitle">
+        FLIGHT CONTROLS
+    </div>
+
+    <div class="controlRow">
+        <span>
+            <span class="key">W</span>
+            Pitch Up
+        </span>
+    </div>
+
+    <div class="controlRow">
+        <span>
+            <span class="key">S</span>
+            Pitch Down
+        </span>
+    </div>
+
+    <div class="controlRow">
+        <span>
+            <span class="key">A</span>
+            Roll Left
+        </span>
+    </div>
+
+    <div class="controlRow">
+        <span>
+            <span class="key">D</span>
+            Roll Right
+        </span>
+    </div>
+
+    <div class="controlRow">
+        <span>
+            <span class="key">Q</span>
+            Yaw Left
+        </span>
+    </div>
+
+    <div class="controlRow">
+        <span>
+            <span class="key">E</span>
+            Yaw Right
+        </span>
+    </div>
+
+    <div class="controlRow">
+        <span>
+            <span class="key">↑</span>
+            Increase Throttle
+        </span>
+    </div>
+
+    <div class="controlRow">
+        <span>
+            <span class="key">↓</span>
+            Decrease Throttle
+        </span>
+    </div>
+
+    <div class="controlRow">
+        <span>
+            <span class="key">R</span>
+            Reset Aircraft
+        </span>
+    </div>
+
+</div>
+
+<div id="status">
+    READY
+</div>
+
+<!-- =========================
+     START SCREEN
+========================= -->
+
+<div id="startScreen">
+
+    <div id="startBox">
+
+        <h1>
+            FLIGHT SIMULATOR
+        </h1>
+
+        <p>
+            3D browser flight simulation
+        </p>
+
+        <p>
+            Use the keyboard controls shown
+            on screen to fly.
+        </p>
+
+        <button id="startButton">
+            START FLIGHT
+        </button>
+
+    </div>
+
+</div>
+
+<!-- =========================
+     THREE.JS
+========================= -->
+
+<script type="importmap">
+{
+    "imports": {
+        "three":
+        "https://cdn.jsdelivr.net/npm/three@0.181.1/build/three.module.js"
+    }
 }
+</script>
 
-window.addEventListener(
-    "resize",
-    resize
+<script type="module">
+
+import * as THREE
+    from "three";
+
+/* =====================================================
+   BASIC SETUP
+===================================================== */
+
+const container =
+    document.getElementById("game");
+
+const scene =
+    new THREE.Scene();
+
+/* Sky */
+
+scene.background =
+    new THREE.Color(
+        0x8fcff0
+    );
+
+/* Camera */
+
+const camera =
+    new THREE.PerspectiveCamera(
+        70,
+        window.innerWidth /
+        window.innerHeight,
+        0.1,
+        100000
+    );
+
+/* Renderer */
+
+const renderer =
+    new THREE.WebGLRenderer({
+        antialias: true,
+        powerPreference: "high-performance"
+    });
+
+renderer.setPixelRatio(
+    Math.min(
+        window.devicePixelRatio,
+        2
+    )
 );
 
-resize();
+renderer.setSize(
+    window.innerWidth,
+    window.innerHeight
+);
 
-/* =========================
+renderer.shadowMap.enabled = true;
+
+renderer.shadowMap.type =
+    THREE.PCFSoftShadowMap;
+
+container.appendChild(
+    renderer.domElement
+);
+
+/* =====================================================
+   LIGHTING
+===================================================== */
+
+const hemisphere =
+    new THREE.HemisphereLight(
+        0xbfe8ff,
+        0x405020,
+        2.0
+    );
+
+scene.add(
+    hemisphere
+);
+
+const sun =
+    new THREE.DirectionalLight(
+        0xffffff,
+        4
+    );
+
+sun.position.set(
+    5000,
+    8000,
+    3000
+);
+
+sun.castShadow = true;
+
+sun.shadow.mapSize.width =
+    2048;
+
+sun.shadow.mapSize.height =
+    2048;
+
+scene.add(
+    sun
+);
+
+/* =====================================================
+   WORLD
+===================================================== */
+
+const WORLD_SIZE =
+    20000;
+
+/* Ground */
+
+const groundGeometry =
+    new THREE.PlaneGeometry(
+        WORLD_SIZE,
+        WORLD_SIZE,
+        100,
+        100
+    );
+
+const groundMaterial =
+    new THREE.MeshStandardMaterial({
+        color: 0x3d6838,
+        roughness: 1
+    });
+
+const ground =
+    new THREE.Mesh(
+        groundGeometry,
+        groundMaterial
+    );
+
+ground.rotation.x =
+    -Math.PI / 2;
+
+ground.receiveShadow = true;
+
+scene.add(
+    ground
+);
+
+/* =====================================================
+   RUNWAY
+===================================================== */
+
+const runwayGeometry =
+    new THREE.PlaneGeometry(
+        80,
+        5000
+    );
+
+const runwayMaterial =
+    new THREE.MeshStandardMaterial({
+        color: 0x292929,
+        roughness: .95
+    });
+
+const runway =
+    new THREE.Mesh(
+        runwayGeometry,
+        runwayMaterial
+    );
+
+runway.rotation.x =
+    -Math.PI / 2;
+
+runway.position.y =
+    0.03;
+
+scene.add(
+    runway
+);
+
+/* Runway centre lines */
+
+const lineMaterial =
+    new THREE.MeshBasicMaterial({
+        color: 0xffffff
+    });
+
+for (
+    let z = -2400;
+    z < 2400;
+    z += 120
+) {
+
+    const line =
+        new THREE.Mesh(
+            new THREE.PlaneGeometry(
+                3,
+                55
+            ),
+            lineMaterial
+        );
+
+    line.rotation.x =
+        -Math.PI / 2;
+
+    line.position.set(
+        0,
+        0.05,
+        z
+    );
+
+    scene.add(line);
+}
+
+/* Runway edge lights */
+
+const lightMaterial =
+    new THREE.MeshBasicMaterial({
+        color: 0xffffff
+    });
+
+for (
+    let z = -2400;
+    z < 2400;
+    z += 80
+) {
+
+    for (
+        const x of [-42, 42]
+    ) {
+
+        const light =
+            new THREE.Mesh(
+                new THREE.SphereGeometry(
+                    1.5,
+                    8,
+                    8
+                ),
+                lightMaterial
+            );
+
+        light.position.set(
+            x,
+            2,
+            z
+        );
+
+        scene.add(light);
+    }
+}
+
+/* =====================================================
+   MOUNTAINS
+===================================================== */
+
+function createMountain(
+    x,
+    z,
+    height,
+    radius
+) {
+
+    const geometry =
+        new THREE.ConeGeometry(
+            radius,
+            height,
+            8
+        );
+
+    const material =
+        new THREE.MeshStandardMaterial({
+            color: 0x50685a,
+            roughness: 1
+        });
+
+    const mountain =
+        new THREE.Mesh(
+            geometry,
+            material
+        );
+
+    mountain.position.set(
+        x,
+        height / 2,
+        z
+    );
+
+    mountain.castShadow =
+        true;
+
+    mountain.receiveShadow =
+        true;
+
+    scene.add(
+        mountain
+    );
+}
+
+/* Generate mountains */
+
+for (
+    let i = 0;
+    i < 100;
+    i++
+) {
+
+    const angle =
+        Math.random() *
+        Math.PI * 2;
+
+    const distance =
+        4000 +
+        Math.random() * 7000;
+
+    createMountain(
+        Math.cos(angle) * distance,
+        Math.sin(angle) * distance,
+        400 +
+        Math.random() * 1800,
+        400 +
+        Math.random() * 800
+    );
+}
+
+/* =====================================================
+   CLOUDS
+===================================================== */
+
+function createCloud(
+    x,
+    y,
+    z
+) {
+
+    const cloud =
+        new THREE.Group();
+
+    const material =
+        new THREE.MeshStandardMaterial({
+            color: 0xffffff,
+            transparent: true,
+            opacity: .82
+        });
+
+    for (
+        let i = 0;
+        i < 8;
+        i++
+    ) {
+
+        const puff =
+            new THREE.Mesh(
+                new THREE.SphereGeometry(
+                    60 +
+                    Math.random() * 50,
+                    16,
+                    16
+                ),
+                material
+            );
+
+        puff.position.set(
+            i * 55,
+            Math.random() * 35,
+            Math.random() * 80
+        );
+
+        cloud.add(
+            puff
+        );
+    }
+
+    cloud.position.set(
+        x,
+        y,
+        z
+    );
+
+    scene.add(
+        cloud
+    );
+}
+
+/* Generate clouds */
+
+for (
+    let i = 0;
+    i < 30;
+    i++
+) {
+
+    createCloud(
+        (Math.random() - .5) *
+            16000,
+
+        1800 +
+            Math.random() *
+            2200,
+
+        (Math.random() - .5) *
+            16000
+    );
+}
+
+/* =====================================================
    AIRCRAFT
-========================= */
+===================================================== */
 
-const aircraft = {
+const aircraft =
+    new THREE.Group();
+
+scene.add(
+    aircraft
+);
+
+/* Fuselage */
+
+const fuselage =
+    new THREE.Mesh(
+        new THREE.CapsuleGeometry(
+            2.3,
+            18,
+            8,
+            24
+        ),
+        new THREE.MeshStandardMaterial({
+            color: 0xe8e8e8,
+            metalness: .55,
+            roughness: .25
+        })
+    );
+
+fuselage.rotation.z =
+    Math.PI / 2;
+
+fuselage.castShadow = true;
+
+aircraft.add(
+    fuselage
+);
+
+/* Nose */
+
+const nose =
+    new THREE.Mesh(
+        new THREE.SphereGeometry(
+            2.3,
+            24,
+            16
+        ),
+        new THREE.MeshStandardMaterial({
+            color: 0xf2f2f2,
+            metalness: .5,
+            roughness: .2
+        })
+    );
+
+nose.position.x =
+    10;
+
+aircraft.add(
+    nose
+);
+
+/* Wings */
+
+const wingGeometry =
+    new THREE.BoxGeometry(
+        25,
+        .35,
+        3
+    );
+
+const wingMaterial =
+    new THREE.MeshStandardMaterial({
+        color: 0xd9d9d9,
+        metalness: .5,
+        roughness: .25
+    });
+
+const wings =
+    new THREE.Mesh(
+        wingGeometry,
+        wingMaterial
+    );
+
+wings.position.x =
+    -1;
+
+aircraft.add(
+    wings
+);
+
+/* Tail plane */
+
+const tail =
+    new THREE.Mesh(
+        new THREE.BoxGeometry(
+            9,
+            .3,
+            2
+        ),
+        wingMaterial
+    );
+
+tail.position.x =
+    -8;
+
+aircraft.add(
+    tail
+);
+
+/* Vertical stabilizer */
+
+const verticalTail =
+    new THREE.Mesh(
+        new THREE.BoxGeometry(
+            5,
+            3.5,
+            .3
+        ),
+        wingMaterial
+    );
+
+verticalTail.position.set(
+    -8,
+    1.5,
+    0
+);
+
+aircraft.add(
+    verticalTail
+);
+
+/* Engines */
+
+function createEngine(
+    z
+) {
+
+    const engine =
+        new THREE.Mesh(
+            new THREE.CylinderGeometry(
+                1.1,
+                1.4,
+                6,
+                24
+            ),
+            new THREE.MeshStandardMaterial({
+                color: 0x555555,
+                metalness: .85,
+                roughness: .2
+            })
+        );
+
+    engine.rotation.z =
+        Math.PI / 2;
+
+    engine.position.set(
+        0,
+        -.6,
+        z
+    );
+
+    aircraft.add(
+        engine
+    );
+
+    /* Engine exhaust */
+
+    const exhaust =
+        new THREE.Mesh(
+            new THREE.CylinderGeometry(
+                .7,
+                .9,
+                2,
+                20
+            ),
+            new THREE.MeshBasicMaterial({
+                color: 0xffaa33,
+                transparent: true,
+                opacity: .45
+            })
+        );
+
+    exhaust.rotation.z =
+        Math.PI / 2;
+
+    exhaust.position.set(
+        -4,
+        -.6,
+        z
+    );
+
+    aircraft.add(
+        exhaust
+    );
+
+    return exhaust;
+}
+
+const engineLeft =
+    createEngine(-6);
+
+const engineRight =
+    createEngine(6);
+
+/* Aircraft shadow */
+
+aircraft.traverse(
+    object => {
+
+        if (
+            object.isMesh
+        ) {
+
+            object.castShadow =
+                true;
+
+        }
+
+    }
+);
+
+/* =====================================================
+   FLIGHT STATE
+===================================================== */
+
+const flight = {
 
     altitude: 5000,
 
     speed: 120,
+
+    throttle: 55,
 
     heading: 0,
 
@@ -260,17 +1173,13 @@ const aircraft = {
 
     yaw: 0,
 
-    throttle: 55,
-
-    verticalSpeed: 0,
-
-    fuel: 100
+    verticalSpeed: 0
 
 };
 
-/* =========================
+/* =====================================================
    KEYBOARD
-========================= */
+===================================================== */
 
 const keys = {};
 
@@ -278,7 +1187,18 @@ window.addEventListener(
     "keydown",
     event => {
 
-        keys[event.key.toLowerCase()] = true;
+        keys[
+            event.key.toLowerCase()
+        ] = true;
+
+        if (
+            event.key.toLowerCase()
+            === "r"
+        ) {
+
+            resetAircraft();
+
+        }
 
     }
 );
@@ -287,387 +1207,395 @@ window.addEventListener(
     "keyup",
     event => {
 
-        keys[event.key.toLowerCase()] = false;
+        keys[
+            event.key.toLowerCase()
+        ] = false;
 
     }
 );
 
-/* =========================
-   FLIGHT PHYSICS
-========================= */
+/* =====================================================
+   RESET
+===================================================== */
 
-function updatePhysics(dt) {
+function resetAircraft() {
+
+    flight.altitude =
+        5000;
+
+    flight.speed =
+        120;
+
+    flight.throttle =
+        55;
+
+    flight.heading =
+        0;
+
+    flight.pitch =
+        0;
+
+    flight.roll =
+        0;
+
+    flight.yaw =
+        0;
+
+    flight.verticalSpeed =
+        0;
+
+    aircraft.position.set(
+        0,
+        flight.altitude,
+        0
+    );
+
+    aircraft.rotation.set(
+        0,
+        0,
+        0
+    );
+
+    camera.position.set(
+        -18,
+        4,
+        0
+    );
+
+}
+
+/* =====================================================
+   PHYSICS
+===================================================== */
+
+function updatePhysics(
+    dt
+) {
 
     let pitchInput = 0;
     let rollInput = 0;
     let yawInput = 0;
 
-    if (keys["w"])
-        pitchInput = 1;
-
-    if (keys["s"])
-        pitchInput = -1;
-
-    if (keys["a"])
-        rollInput = -1;
-
-    if (keys["d"])
-        rollInput = 1;
-
-    if (keys["q"])
-        yawInput = -1;
-
-    if (keys["e"])
-        yawInput = 1;
-
-    /* Throttle */
-
-    if (keys["arrowup"])
-        aircraft.throttle +=
-            25 * dt;
-
-    if (keys["arrowdown"])
-        aircraft.throttle -=
-            25 * dt;
-
-    aircraft.throttle =
-        Math.max(
-            0,
-            Math.min(
-                100,
-                aircraft.throttle
-            )
-        );
-
     /* Pitch */
 
-    aircraft.pitch +=
-        pitchInput *
-        20 *
-        dt;
+    if (
+        keys["w"]
+    )
+        pitchInput = 1;
+
+    if (
+        keys["s"]
+    )
+        pitchInput = -1;
 
     /* Roll */
 
-    aircraft.roll +=
-        rollInput *
-        55 *
-        dt;
+    if (
+        keys["a"]
+    )
+        rollInput = 1;
+
+    if (
+        keys["d"]
+    )
+        rollInput = -1;
 
     /* Yaw */
 
-    aircraft.yaw +=
-        yawInput *
-        30 *
+    if (
+        keys["q"]
+    )
+        yawInput = 1;
+
+    if (
+        keys["e"]
+    )
+        yawInput = -1;
+
+    /* Throttle */
+
+    if (
+        keys["arrowup"]
+    ) {
+
+        flight.throttle +=
+            30 * dt;
+
+    }
+
+    if (
+        keys["arrowdown"]
+    ) {
+
+        flight.throttle -=
+            30 * dt;
+
+    }
+
+    flight.throttle =
+        THREE.MathUtils.clamp(
+            flight.throttle,
+            0,
+            100
+        );
+
+    /* Control rates */
+
+    flight.pitch +=
+        pitchInput *
+        24 *
         dt;
 
-    aircraft.heading +=
-        aircraft.yaw *
+    flight.roll +=
+        rollInput *
+        65 *
+        dt;
+
+    flight.yaw +=
+        yawInput *
+        25 *
         dt;
 
     /* Stability */
 
-    aircraft.pitch *=
-        Math.pow(.985, dt * 60);
+    flight.pitch *=
+        Math.pow(
+            .985,
+            dt * 60
+        );
 
-    aircraft.roll *=
-        Math.pow(.992, dt * 60);
+    flight.roll *=
+        Math.pow(
+            .992,
+            dt * 60
+        );
 
-    aircraft.yaw *=
-        Math.pow(.96, dt * 60);
+    flight.yaw *=
+        Math.pow(
+            .94,
+            dt * 60
+        );
 
     /* Bank creates turn */
 
-    aircraft.heading +=
+    const bankRadians =
+        THREE.MathUtils.degToRad(
+            flight.roll
+        );
+
+    flight.heading +=
         Math.sin(
-            aircraft.roll *
-            Math.PI /
-            180
+            bankRadians
         ) *
-        aircraft.speed *
-        .015 *
+        flight.speed *
+        .008 *
         dt;
+
+    /* Normalize */
+
+    flight.heading =
+        (flight.heading + 360)
+        % 360;
 
     /* Engine thrust */
 
+    const throttle =
+        flight.throttle / 100;
+
     const thrust =
-        aircraft.throttle / 100;
+        throttle *
+        70;
+
+    /* Aerodynamic drag */
 
     const drag =
-        .015 *
-        aircraft.speed *
-        aircraft.speed /
+        .012 *
+        flight.speed *
+        flight.speed /
         100;
 
     const acceleration =
-        thrust * 45 -
+        thrust -
         drag;
 
-    aircraft.speed +=
-        acceleration * dt;
+    flight.speed +=
+        acceleration *
+        dt;
 
-    aircraft.speed =
-        Math.max(
+    flight.speed =
+        THREE.MathUtils.clamp(
+            flight.speed,
             35,
-            Math.min(
-                650,
-                aircraft.speed
-            )
+            650
         );
 
     /* Lift */
 
     const pitchRadians =
-        aircraft.pitch *
-        Math.PI /
-        180;
+        THREE.MathUtils.degToRad(
+            flight.pitch
+        );
+
+    /*
+       Approximate vertical
+       aerodynamic component.
+    */
 
     const lift =
         Math.sin(
             pitchRadians
         ) *
-        aircraft.speed *
-        .75;
+        flight.speed *
+        .65;
 
-    const gravity = 32;
+    const gravity =
+        30;
 
-    aircraft.verticalSpeed =
-        lift - gravity;
+    flight.verticalSpeed =
+        lift -
+        gravity;
 
-    aircraft.altitude +=
-        aircraft.verticalSpeed *
+    flight.altitude +=
+        flight.verticalSpeed *
         dt;
 
     /* Ground */
 
-    if (aircraft.altitude < 0) {
-
-        aircraft.altitude = 0;
-
-        aircraft.speed *= .7;
-
-    }
-
-    /* Heading */
-
-    aircraft.heading %= 360;
-
-    if (aircraft.heading < 0)
-        aircraft.heading += 360;
-
-}
-
-/* =========================
-   WORLD
-========================= */
-
-function drawWorld() {
-
-    const width =
-        canvas.width;
-
-    const height =
-        canvas.height;
-
-    const horizon =
-        height / 2 -
-        aircraft.pitch * 8;
-
-    /* Sky */
-
-    const sky =
-        ctx.createLinearGradient(
-            0,
-            0,
-            0,
-            height
-        );
-
-    sky.addColorStop(
-        0,
-        "#2673bd"
-    );
-
-    sky.addColorStop(
-        .55,
-        "#79ccef"
-    );
-
-    sky.addColorStop(
-        1,
-        "#d8f1ff"
-    );
-
-    ctx.fillStyle = sky;
-
-    ctx.fillRect(
-        0,
-        0,
-        width,
-        height
-    );
-
-    /* Mountains */
-
-    drawMountains(
-        width,
-        horizon
-    );
-
-    /* Ground */
-
-    ctx.save();
-
-    ctx.translate(
-        width / 2,
-        horizon
-    );
-
-    ctx.rotate(
-        aircraft.roll *
-        Math.PI /
-        180
-    );
-
-    ctx.fillStyle =
-        "#416b3c";
-
-    ctx.fillRect(
-        -width * 2,
-        0,
-        width * 4,
-        height * 2
-    );
-
-    /* Runway */
-
-    ctx.fillStyle =
-        "#444";
-
-    ctx.beginPath();
-
-    ctx.moveTo(-80, 0);
-    ctx.lineTo(80, 0);
-    ctx.lineTo(700, height * 2);
-    ctx.lineTo(-700, height * 2);
-
-    ctx.closePath();
-
-    ctx.fill();
-
-    /* Runway centerline */
-
-    ctx.fillStyle =
-        "white";
-
-    for (
-        let y = 50;
-        y < height * 2;
-        y += 100
+    if (
+        flight.altitude < 2
     ) {
 
-        const size =
-            4 + y / 100;
+        flight.altitude =
+            2;
 
-        ctx.fillRect(
-            -size / 2,
-            y,
-            size,
-            40
-        );
+        flight.verticalSpeed =
+            Math.max(
+                flight.verticalSpeed,
+                0
+            );
+
+        flight.speed *=
+            Math.pow(
+                .985,
+                dt * 60
+            );
 
     }
 
-    ctx.restore();
+    /* Aircraft transform */
+
+    aircraft.position.y =
+        flight.altitude;
+
+    aircraft.rotation.x =
+        THREE.MathUtils.degToRad(
+            flight.pitch
+        );
+
+    aircraft.rotation.z =
+        THREE.MathUtils.degToRad(
+            flight.roll
+        );
+
+    aircraft.rotation.y =
+        THREE.MathUtils.degToRad(
+            flight.heading
+        );
+
+    /* Engine glow */
+
+    const engineScale =
+        .3 +
+        throttle * 1.7;
+
+    engineLeft.scale.set(
+        engineScale,
+        engineScale,
+        engineScale
+    );
+
+    engineRight.scale.set(
+        engineScale,
+        engineScale,
+        engineScale
+    );
 
 }
 
-/* =========================
-   MOUNTAINS
-========================= */
+/* =====================================================
+   CAMERA
+===================================================== */
 
-function drawMountains(
-    width,
-    horizon
+function updateCamera(
+    dt
 ) {
 
-    ctx.save();
+    /*
+       Camera follows behind
+       the aircraft.
+    */
 
-    ctx.translate(
-        -aircraft.heading * 2,
-        0
-    );
-
-    ctx.fillStyle =
-        "#46655e";
-
-    ctx.beginPath();
-
-    ctx.moveTo(
-        -width,
-        horizon
-    );
-
-    for (
-        let x = -width;
-        x < width * 2;
-        x += 70
-    ) {
-
-        const mountainHeight =
-            40 +
-            Math.abs(
-                Math.sin(
-                    x * .012
-                )
-            ) * 150;
-
-        ctx.lineTo(
-            x,
-            horizon -
-            mountainHeight
+    const desired =
+        new THREE.Vector3(
+            -22,
+            6,
+            0
         );
 
-    }
-
-    ctx.lineTo(
-        width * 2,
-        horizon
+    desired.applyQuaternion(
+        aircraft.quaternion
     );
 
-    ctx.closePath();
+    desired.add(
+        aircraft.position
+    );
 
-    ctx.fill();
+    camera.position.lerp(
+        desired,
+        1 -
+        Math.pow(
+            .001,
+            dt
+        )
+    );
 
-    ctx.restore();
+    const lookAt =
+        aircraft.position.clone();
+
+    lookAt.y += 1;
+
+    camera.lookAt(
+        lookAt
+    );
 
 }
 
-/* =========================
+/* =====================================================
    HUD
-========================= */
+===================================================== */
 
 function updateHUD() {
 
     document.getElementById(
-        "speedValue"
+        "airspeed"
     ).textContent =
         Math.round(
-            aircraft.speed
+            flight.speed
         );
 
     document.getElementById(
-        "altitudeValue"
+        "throttle"
     ).textContent =
         Math.round(
-            aircraft.altitude
+            flight.throttle
         );
 
     document.getElementById(
-        "headingValue"
+        "heading"
     ).textContent =
         String(
             Math.round(
-                aircraft.heading
+                flight.heading
             )
         ).padStart(
             3,
@@ -675,61 +1603,146 @@ function updateHUD() {
         );
 
     document.getElementById(
-        "throttleValue"
+        "altitude"
     ).textContent =
         Math.round(
-            aircraft.throttle
+            flight.altitude
+        );
+
+    /*
+       Convert vertical speed
+       to approximate feet/minute.
+    */
+
+    const fpm =
+        flight.verticalSpeed *
+        60;
+
+    document.getElementById(
+        "verticalSpeed"
+    ).textContent =
+        Math.round(
+            fpm
         );
 
     document.getElementById(
-        "pitchValue"
+        "pitch"
     ).textContent =
-        aircraft.pitch.toFixed(1);
+        flight.pitch.toFixed(
+            1
+        );
 
     document.getElementById(
-        "rollValue"
+        "bank"
     ).textContent =
-        aircraft.roll.toFixed(1);
-
-    document.getElementById(
-        "yawValue"
-    ).textContent =
-        aircraft.yaw.toFixed(1);
+        flight.roll.toFixed(
+            1
+        );
 
 }
 
-/* =========================
-   GAME LOOP
-========================= */
+/* =====================================================
+   RESIZE
+===================================================== */
 
-let previousTime =
+window.addEventListener(
+    "resize",
+    () => {
+
+        camera.aspect =
+            window.innerWidth /
+            window.innerHeight;
+
+        camera.updateProjectionMatrix();
+
+        renderer.setSize(
+            window.innerWidth,
+            window.innerHeight
+        );
+
+    }
+);
+
+/* =====================================================
+   START
+===================================================== */
+
+document
+    .getElementById(
+        "startButton"
+    )
+    .addEventListener(
+        "click",
+        () => {
+
+            document
+                .getElementById(
+                    "startScreen"
+                )
+                .style.display =
+                "none";
+
+            document
+                .getElementById(
+                    "status"
+                )
+                .textContent =
+                "FLYING";
+
+        }
+    );
+
+/* =====================================================
+   INITIALIZE
+===================================================== */
+
+resetAircraft();
+
+/* =====================================================
+   MAIN LOOP
+===================================================== */
+
+let lastTime =
     performance.now();
 
-function gameLoop(time) {
+function animate(
+    currentTime
+) {
+
+    requestAnimationFrame(
+        animate
+    );
 
     const dt =
         Math.min(
-            (time - previousTime) /
+            (currentTime -
+                lastTime) /
             1000,
             .05
         );
 
-    previousTime = time;
+    lastTime =
+        currentTime;
 
-    updatePhysics(dt);
+    updatePhysics(
+        dt
+    );
 
-    drawWorld();
+    updateCamera(
+        dt
+    );
 
     updateHUD();
 
-    requestAnimationFrame(
-        gameLoop
+    renderer.render(
+        scene,
+        camera
     );
 
 }
 
 requestAnimationFrame(
-    gameLoop
+    animate
 );
 
 </script>
